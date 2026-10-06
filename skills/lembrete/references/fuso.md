@@ -74,12 +74,12 @@ Nothing here can see it. Their number does not change when they land somewhere
 else, and `maps` cannot be asked where they are. **The read-back is the whole
 defence:** `["agora"]` puts their own current time in front of them in every
 answer, relative delays included. Someone who went to bed in Alaska and woke up
-in Norway reads "são 3h da manhã aí agora" at midday and says so.
+in Norway reads "it's 3 AM there now" at midday and says so.
 
 **Measured 2026-09-17, and it is why the chain exists.** Someone asked, by
 voice, for a reminder at nine the next morning. The instance ran in Pacific,
-the person was in Brazil, and nothing had been asked. The agent answered *"te
-aviso amanhã às 9h"* and scheduled it four hours after the appointment.
+the person was in Brazil, and nothing had been asked. The agent answered *"I'll
+remind you tomorrow at 9"* (translated) and scheduled it four hours after the appointment.
 Nothing broke, nothing was logged, and the person had no way to know until the
 hour passed. Their number began `+55 24`. **The answer was in the message all
 along.**

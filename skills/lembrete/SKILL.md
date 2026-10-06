@@ -12,7 +12,7 @@ metadata:
     requires_toolsets: [terminal, cronjob]
 ---
 
-# Lembrete Skill
+# Lembrete (Reminder) Skill
 
 **The tool is `cronjob`. Do not look for another, do not read the image's
 code, do not import a module.** This line is first because it holds the
@@ -33,13 +33,13 @@ assumed.
 
 - Someone says there is something they must not forget, with or without a time.
 - A message carries any expression of time attached to something to do
-  ("amanhã às 9", "em 20 minutos", "sexta à tarde", "in two hours").
+  ("tomorrow at 9", "in 20 minutes", "friday afternoon", "in two hours").
 - A photo or a voice message arrives with a commitment inside it.
-- **Someone calls off, moves, or asks about something already set** — "deixa pra
-  lá o do dentista", "adia os Correios pra amanhã", "never mind the dentist
+- **Someone calls off, moves, or asks about something already set** — "drop
+  the dentist one", "push the post office to tomorrow", "never mind the dentist
   one", "what do I have set?". See *Changing what is already set*.
 
-Do **not** use it for recurring routines ("every morning", "toda segunda").
+Do **not** use it for recurring routines ("every morning", "every monday").
 This skill only ever creates one-shot jobs; a routine is a different shape.
 
 ## Prerequisites
@@ -134,9 +134,9 @@ step 5, in their words — may break that silence.
    and is where exit 2 sends you.
 
 4. **Run the resolver** on what they said about when, with `--handle` (and
-   `--tz`, if told). Silent: no "vou criar o lembrete", no "deixa eu verificar".
+   `--tz`, if told). Silent: no "I'll create the reminder", no "let me check".
 
-5. **On exit 2, ask and stop.** Never record "prazo não informado" when a time
+5. **On exit 2, ask and stop.** Never record "no deadline given" when a time
    *was* said — that is the failure this skill exists to prevent.
 
 6. **Settle what you understood, before creating anything:** the thing, the
@@ -185,13 +185,13 @@ step 5, in their words — may break that silence.
    `prompt` calls those words is what it obeys. Asking it for a *tone* invites
    it to write its own sentence in that tone; asking it for a *text* does not.
 
-       WRONG   Manda pro Davi, exatamente com esse clima: "<o texto dele>"
-       RIGHT   Manda pro Davi este texto, palavra por palavra, sem corrigir
-               nada: "<o texto dele>"
+       WRONG   Send this to Davi, in exactly this mood: "<his text>"
+       RIGHT   Send Davi this text, word for word, correcting
+               nothing: "<his text>"
 
-   That wrong line is real, read out of a stored job on 18/09/2026. The person
+   That wrong line is real (translated), read out of a stored job on 18/09/2026. The person
    had asked for a phrase in quotes, deliberately misspelled — it was the joke.
-   The stored `prompt` said *"com esse clima"*, and what went out nine hours
+   The stored `prompt` said *"in exactly this mood"*, and what went out nine hours
    later was a third version of the sentence, tidied up. **Quotes around a
    phrase are the plainest thing a person has for saying this is mine: do not
    touch it.** Spelling they chose is part of the phrase, not an error to fix.
@@ -203,11 +203,11 @@ step 5, in their words — may break that silence.
 
 8. **Confirm — ONE message, and it is the only one.** The thing, the moment
    from `["human"]` in plain words, every line of `["assumed"]`, and nothing
-   about how you got there. Sent on the real line on 14/09/2026, in this order:
+   about how you got there. Sent on the real line on 14/09/2026 (translated), in this order:
 
-       "Isso é um delay relativo, então não precisa de fuso horário.
-        Vou criar o lembrete."
-       "Certo, te aviso em 2 minutos pra tirar o bolo do forno."
+       "That's a relative delay, so it doesn't need a time zone.
+        I'll create the reminder."
+       "Got it, I'll remind you in 2 minutes to take the cake out."
 
    The second one alone was the whole answer. When a reply has two paragraphs
    and the first explains the mechanism, the first is not part of the answer.
@@ -215,7 +215,7 @@ step 5, in their words — may break that silence.
    **Three numbers go back, always and together** — `["agora"]`, `["human"]`,
    `["daqui"]`:
 
-       "São 23:32 aí agora. Te aviso amanhã às 9h, daqui a 9h28."
+       "It's 23:32 there now. I'll remind you tomorrow at 9:00, 9h28 from now."
 
    **`["agora"]` is the one that matters and the one you will drop.** The
    moment is their own words returning and cannot sound wrong to them; the gap
@@ -230,23 +230,23 @@ step 5, in their words — may break that silence.
    wall-clock time: an hour invented there would be the server's.
 
    **`["human"]`, `["assumed"]` and `["ask"]` are machine output — a bare
-   `2026-09-18 09:00` and a fixed Portuguese note. Restate them; never paste
+   `2026-09-18 09:00` and a fixed English note. Restate them; never paste
    them.** Say the date the way the person writes dates, and the note in their
    language.
 
 ### Changing what is already set
 
-Creating is half of it. The other half is what people actually say next: *deixa
-pra lá*, *adia pra amanhã*, *o que eu tenho marcado?*. All of it is the same
+Creating is half of it. The other half is what people actually say next: *never
+mind*, *push it to tomorrow*, *what do I have set?*. All of it is the same
 `cronjob` tool, with the action changed — nothing new to install.
 
 | They say | Action | What it does |
 |---|---|---|
-| "deixa pra lá", "never mind", "cancel that" | `remove` | gone, permanently |
-| "adia pra amanhã", "push it to friday", "make it 9" | `update` with a new `schedule` | keeps the job and its text, rearms it |
-| "guarda esse por enquanto", "hold that one for now" | `pause` | stays, stops firing |
-| "volta aquele do dentista", "bring back the dentist one" | `resume` | fires again |
-| "o que você tem marcado?", "what do I have set?" | `list` | everything, to read back |
+| "never mind", "cancel that", "drop it" | `remove` | gone, permanently |
+| "push it to tomorrow", "push it to friday", "make it 9" | `update` with a new `schedule` | keeps the job and its text, rearms it |
+| "keep that one for later", "hold that one for now" | `pause` | stays, stops firing |
+| "turn the dentist one back on", "bring back the dentist one" | `resume` | fires again |
+| "what have you got set for me?", "what do I have set?" | `list` | everything, to read back |
 | — | `run` | fires now; see `references/cronjob.md` |
 
 **Rule one: always `list` first, and never guess a job id.** The tool says so
@@ -255,8 +255,8 @@ itself. `job_id` is required by every action except `list`, and it accepts a
 
 **Rule two: an ambiguous name is a question, not a guess.** Two jobs matching
 one name come back as `success: false` with a `matches` array — id, name,
-schedule and next run for each. That is enough to ask *"o do dentista de terça
-ou o de quinta?"* in the person's own terms. Never pick one. A name that matches
+schedule and next run for each. That is enough to ask *"the dentist one on Tuesday
+or the one on Thursday?"* in the person's own terms. Never pick one. A name that matches
 nothing comes back as not found; say that plainly rather than inventing.
 
 **Postponing is ONE call, not a delete and a recreate:**
@@ -268,16 +268,16 @@ nothing comes back as not found; say that plainly rather than inventing.
     )
 
 The stored `prompt` survives, so the reminder still says what the person
-originally meant. Resolve the new moment exactly as step 4 does — *"adia 1 hora"*
-is a relative delay and becomes `"in 1h"`; *"amanhã às 9"* needs the zone. A bare
+originally meant. Resolve the new moment exactly as step 4 does — *"push it 1 hour"*
+is a relative delay and becomes `"in 1h"`; *"tomorrow at 9"* needs the zone. A bare
 `"1h"` still means **every** hour.
 
 **`update` only touches what you pass.** A field you omit is left alone; a blank
 `name` is treated as "no change", not as an erase. Do not re-send the whole job
 to change one thing.
 
-**Confirm the same way step 8 does: one message, in their words.** *"Cancelei o
-do dentista."* *"Beleza, os Correios ficam pra amanhã às 9."* No job id, no
+**Confirm the same way step 8 does: one message, in their words.** *"Cancelled the
+dentist one."* *"Sure, the post office is now tomorrow at 9."* No job id, no
 action name, no report that a tool ran.
 
 ## Pitfalls
@@ -315,7 +315,7 @@ bare-duration trap was hit; delete it and recreate with `"in …"`.
 
 To check the resolver itself, without touching the scheduler:
 
-    python3 scripts/quando.py "amanha as 9" --tz America/Sao_Paulo \
+    python3 scripts/quando.py "tomorrow at 9" --tz America/Sao_Paulo \
         --now "2026-09-13T19:00:00-03:00"
 
 must print `2026-09-14T09:00:00-03:00` and exit 0. The zone is not decoration:

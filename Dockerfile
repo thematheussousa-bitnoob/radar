@@ -1,143 +1,149 @@
-# agente-tarefas — agente derivado da imagem base da Plow.
+# agente-tarefas -- an agent derived from Plow's base image.
 #
-# Pino: tag imutável `base-<sha completo do commit>` MAIS o digest, que é como
-# o próprio organizador publicou. A tag diz qual commit é; o digest garante que
-# o byte não mudou embaixo dela.
+# Pin: the immutable tag `base-<full commit sha>` PLUS the digest, which is how
+# the organizer published it. The tag says which commit it is; the digest
+# guarantees the bytes did not change underneath it.
 #
-# POR QUE ESTÁ NO 51f83158 (17/09 20:19 UTC), desde 17/09/2026: ordem direta do
-# Dane no `#ai-worth-using-hackathon`, com `@everyone`, nove minutos depois da
-# imagem nascer — "atualize a primeira linha do seu Dockerfile", reconstrua,
-# confirme que responde, e poste. Esta casa NÃO leu o código deste commit: o
-# pino veio da ordem, e a conferência que coube foi a do registro público da
-# ECR — a tag existe, é `linux/amd64`, e o digest bate com o que ele deu.
+# WHY IT IS ON 51f83158 (17/09 20:19 UTC), since 17/09/2026: a direct order from
+# Dane in `#ai-worth-using-hackathon`, with `@everyone`, nine minutes after the
+# image was born -- "update the first line of your Dockerfile", rebuild,
+# confirm it answers, and post. This house did NOT read the code of this commit:
+# the pin came from the order, and the check that applied was the one against
+# the public ECR registry -- the tag exists, it is `linux/amd64`, and the digest
+# matches the one he gave.
 #
-# O pino anterior era o 910b8e3 (16/09 20:56 UTC), e ele NÃO estava quebrado —
-# o defeito que a ordem descreve, base que só lê o login de um arquivo, era do
-# 4747960. Estávamos um pino atrás, não parados.
+# The previous pin was 910b8e3 (16/09 20:56 UTC), and it was NOT broken -- the
+# defect the order describes, a base that only reads the login from a file,
+# belonged to 4747960. We were one pin behind, not stuck.
 #
-# POR QUE SAIU DO 4747960 (10/09), em 17/09/2026: naquele commit o `plow-init`
-# lia a credencial SÓ de `/var/lib/plow/credentials` e rebaixava o ambiente na
-# letra — "The file is the ONLY source". A nuvem da Plow entrega pelo AMBIENTE,
-# então uma imagem presa ali estaciona esperando um arquivo que nunca chega.
-# O commit b78250e inverteu: ambiente primeiro, arquivo como queda até o
-# plow#2007. Lido no código dos dois commits e conferido DENTRO da imagem
-# construída, não suposto.
+# WHY IT LEFT 4747960 (10/09), on 17/09/2026: in that commit `plow-init` read
+# the credential ONLY from `/var/lib/plow/credentials` and demoted the
+# environment to the letter -- "The file is the ONLY source". Plow's cloud
+# delivers through the ENVIRONMENT, so an image stuck there parks waiting for a
+# file that never arrives. Commit b78250e reversed it: environment first, file
+# as the fallback until plow#2007. Read in the code of both commits and checked
+# INSIDE the built image, not assumed.
 #
-# ELE ANDA JUNTO COM O `compose.yml`, E AS DUAS MEXIDAS NÃO SE SEPARAM: o mesmo
-# b78250e APAGOU do `00-plow-sanitize` a promoção de `credentials.host`. Quem
-# subir este pino continuando a montar o `.host` fica sem credencial nenhuma e
-# estaciona igual — só que na própria máquina, em vez de na nuvem.
+# IT MOVES TOGETHER WITH `compose.yml`, AND THE TWO CHANGES DO NOT SEPARATE: the
+# same b78250e DELETED the promotion of `credentials.host` from
+# `00-plow-sanitize`. Whoever moves to this pin while still mounting `.host` is
+# left with no credential at all and parks the same way -- only on their own
+# machine instead of in the cloud.
 FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-ef0019372ff8bca593611b31ebd2e08f9f1458ff@sha256:a8a2f97ad78b8192d80a984dce81d3bf5a9a883d18cb7b677704913a09b56aee
 
-# A identidade específica deste agente.
+# This agent's own identity.
 #
-# O `plow-init` COMPÕE /var/lib/hermes/SOUL.md a cada boot: persona da base
-# primeiro, este arquivo depois. As duas convivem — a proteção de segurança da
-# base NÃO some, e por isso não é repetida aqui.
+# `plow-init` COMPOSES /var/lib/hermes/SOUL.md on every boot: the base persona
+# first, this file after it. The two live together -- the base's safety
+# protection does NOT go away, and that is why it is not repeated here.
 #
-# NÃO copiar nada por cima de /var/lib/hermes/SOUL.md: é reescrito no boot.
+# Do NOT copy anything over /var/lib/hermes/SOUL.md: it is rewritten at boot.
 #
-# A fonte é o SOUL.md desta pasta, que é o arquivo ratificado. Ele entra na
-# imagem com o nome que o plow-init espera. Um arquivo, uma verdade.
+# The source is this folder's SOUL.md, which is the ratified file. It enters the
+# image under the name plow-init expects. One file, one truth.
 COPY --chown=0:0 SOUL.md /opt/hermes/plow-seed/persona.md
-# O modo em passo separado: `COPY --chmod=` é só do BuildKit, e um Docker
-# padrão ainda escolhe o construtor antigo, onde isso quebra o build.
+# The mode in a separate step: `COPY --chmod=` is BuildKit-only, and a default
+# Docker still picks the legacy builder, where it breaks the build.
 RUN chmod 0644 /opt/hermes/plow-seed/persona.md
 
-# A PODA. Decidida pelo Matheus em 14/09/2026, e o motivo NÃO é o token: é que
-# este agente resolve uma pergunta só. Nas palavras dele — "se ele for resolver
-# vários problemas, ele não é o nosso agente, ele é o Hermes de novo". A imagem
-# base chega com 62 habilidades e 16 descrições de categoria, e o que delas
-# viaja em TODA mensagem é o índice: 6.067 bytes, ~1.520 tokens. Depois desta
-# poda são 281 bytes, ~70 tokens. A economia é consequência, não a razão.
+# THE PRUNING. Decided by Matheus on 14/09/2026, and the reason is NOT the
+# tokens: it is that this agent solves a single question. In his words -- "if it
+# is going to solve many problems, it is not our agent, it is Hermes again". The
+# base image arrives with 62 skills and 16 category descriptions, and what
+# travels from them in EVERY message is the index: 6,067 bytes, ~1,520 tokens.
+# After this pruning it is 281 bytes, ~70 tokens. The saving is a consequence,
+# not the reason.
 #
-# Escrita como LISTA DO QUE FICA, e isso é de propósito: habilidade que a imagem
-# base ganhar numa atualização já nasce podada, em vez de voltar pela porta dos
-# fundos sem ninguém decidir.
+# Written as a LIST OF WHAT STAYS, and that is on purpose: a skill the base image
+# gains in an update is born already pruned, instead of coming back through the
+# back door without anyone deciding.
 #
-# `productivity/maps` fica por ordem dele, e cabe no critério: um lembrete de
-# "passar nos Correios" que já chega dizendo qual agência e a que distância é o
-# mesmo problema chegando resolvido, não um segundo problema. Provada nesta casa
-# com o endereço real dele. Sem chave, biblioteca padrão, e faz fuso horário —
-# que é matéria-prima do "quando". `DESCRIPTION.md` da categoria vem junto
-# porque é ela que descreve a pasta que sobrou.
+# `productivity/maps` stays on his order, and it fits the rule: a reminder to
+# "stop by the post office" that already arrives saying which branch and how far
+# away is the same problem arriving solved, not a second problem. Proven in this
+# house with his real address. No key, standard library, and it does time zones
+# -- which is the raw material of "when". The category's `DESCRIPTION.md` comes
+# along because it is what describes the folder that remained.
 #
-# `index-cache` NÃO é habilidade e não tem `SKILL.md`: não custa nada no índice
-# e é cache das habilidades opcionais. Fica.
+# `index-cache` is NOT a skill and has no `SKILL.md`: it costs nothing in the
+# index and is the cache of the optional skills. It stays.
 #
-# Antes do COPY das nossas, para a poda não ter de conhecer o nome delas.
-RUN for raiz in /var/lib/hermes/skills /opt/hermes/skills; do \
-        [ -d "$raiz" ] || continue; \
-        find "$raiz" -mindepth 1 -maxdepth 1 \
+# Before the COPY of ours, so the pruning does not need to know their names.
+RUN for root in /var/lib/hermes/skills /opt/hermes/skills; do \
+        [ -d "$root" ] || continue; \
+        find "$root" -mindepth 1 -maxdepth 1 \
              ! -name productivity ! -name index-cache -exec rm -rf {} + ; \
-        [ -d "$raiz/productivity" ] && \
-        find "$raiz/productivity" -mindepth 1 -maxdepth 1 \
+        [ -d "$root/productivity" ] && \
+        find "$root/productivity" -mindepth 1 -maxdepth 1 \
              ! -name maps ! -name DESCRIPTION.md -exec rm -rf {} + ; \
     done; true
 
-# As habilidades, nas DUAS cópias, como a imagem base faz. A segunda é de onde
-# uma casa que começa vazia é semeada, e é por onde atualização de imagem chega.
-# É fonte, não backup: habilidade que o agente apagar fica apagada.
+# The skills, in BOTH copies, as the base image does. The second is where a home
+# that starts empty is seeded from, and where image updates arrive through.
+# It is a source, not a backup: a skill the agent deletes stays deleted.
 COPY --chown=10000:10000 skills/ /var/lib/hermes/skills/
 COPY --chown=10000:10000 skills/ /opt/hermes/skills/
 
-# A configuração que tem de valer na casa que JÁ existe E na de um estranho que
-# instale do zero. Essa é a única porta: `cont-init` semeia apenas um
-# `config.yaml` AUSENTE, e o `configure()` do plow-init reescreve só as chaves
-# de que ele é dono — `stt` não está entre elas. Uma chave posta na semente
-# nunca alcançaria a casa do Matheus, que nasceu antes dela.
+# The configuration that has to hold in the home that ALREADY exists AND in a
+# stranger's fresh install. This is the only door: `cont-init` seeds only an
+# ABSENT `config.yaml`, and plow-init's `configure()` rewrites only the keys it
+# owns -- `stt` is not among them. A key put in the seed would never reach
+# Matheus's home, which was born before it.
 #
-# Roda como root, antes de qualquer serviço, e DEPOIS de `00-plow-sanitize`,
-# que é quem semeia o config — a ordem é alfabética, por isso o `01`.
+# Runs as root, before any service, and AFTER `00-plow-sanitize`, which is what
+# seeds the config -- the order is alphabetical, hence the `01`.
 #
-# O COPY de diretório MESCLA: o `00-plow-sanitize` da imagem base continua lá.
+# A directory COPY MERGES: the base image's `00-plow-sanitize` is still there.
 COPY --chown=0:0 image/cont-init.d/ /etc/cont-init.d/
-# O modo em passo separado, pelo mesmo motivo da persona acima: `COPY --chmod=`
-# é só do BuildKit. Só os nossos arquivos, nunca a pasta — o script da base tem
-# o modo que a base escolheu.
+# The mode in a separate step, for the same reason as the persona above:
+# `COPY --chmod=` is BuildKit-only. Only our files, never the folder -- the
+# base's script keeps the mode the base chose.
 #
-# São TRÊS desde 14/09/2026, e os três usam a mesma porta pelo mesmo motivo:
-# coisa que precisa valer na casa nascida E na casa nova, por uma porta só. O
-# `02` desliga o embrulho de máquina das entregas agendadas
-# (`cron.wrap_response`). O `03` conserta o caminho que a habilidade `maps`
-# crava e que não existe aqui — não é chave de config, é o texto da habilidade,
-# e por isso ele mexe nas DUAS raízes: a casa (volume, que imagem não alcança) e
-# o pacote (`/opt/hermes/skills`, de onde uma casa vazia é semeada).
+# There have been THREE since 14/09/2026, and all three use the same door for
+# the same reason: something that has to hold in the existing home AND in a new
+# one, through a single door. `02` turns off the machine envelope of scheduled
+# deliveries (`cron.wrap_response`). `03` fixes the path the `maps` skill
+# hardcodes and that does not exist here -- it is not a config key, it is the
+# skill's text, and so it touches BOTH roots: the home (a volume, which the image
+# does not reach) and the package (`/opt/hermes/skills`, from which an empty
+# home is seeded).
 RUN chmod 0755 /etc/cont-init.d/01-stt-language \
                 /etc/cont-init.d/02-cron-wrap \
                 /etc/cont-init.d/03-maps-path \
                 /etc/cont-init.d/04-toolsets
 
-# A trava dos comandos com barra. Sem lista de admin, o portão não fica fechado:
-# ele fica DESLIGADO (`enabled = bool(admin_ids)` em `gateway/slash_access.py`), e
-# qualquer remetente roda `/yolo`, que desliga a confirmação antes do
-# irreversível. É o achado mais barato contra nós numa verificação cujo critério
-# declarado é segurança.
+# The slash-command lock. Without an admin list, the gate does not stay closed:
+# it is OFF (`enabled = bool(admin_ids)` in `gateway/slash_access.py`), and any
+# sender runs `/yolo`, which turns off the confirmation before anything
+# irreversible. It is the cheapest finding against us in a verification whose
+# stated criterion is security.
 #
-# Não pode ser constante: a lista é de IDs DE USUÁRIO, diferentes em cada
-# instalação. Por isso é um serviço que descobre o dono em execução — depois do
-# `plow-init`, que é quem pergunta à Plow quem é o dono, e ANTES do gateway, que
-# é quem lê a trava. As duas dependências estão declaradas em `s6-rc.d/`.
+# It cannot be a constant: the list is of USER IDs, different in every install.
+# That is why it is a service that discovers the owner at runtime -- after
+# `plow-init`, which is what asks Plow who the owner is, and BEFORE the gateway,
+# which is what reads the lock. Both dependencies are declared in `s6-rc.d/`.
 COPY --chown=0:0 image/s6-overlay/ /etc/s6-overlay/
 RUN chmod 0755 /etc/s6-overlay/scripts/slash-lock.py
 
-# O REPORTER DO AGENT INDEX vem na própria imagem base: o serviço `agent-index`
-# e o client em `/opt/plow`. É ele que faz instalação e token CONTAREM no
-# placar. SEM `AGENT_ID` no ambiente ele NÃO CHUTA NOME: avisa e dorme.
+# THE AGENT INDEX REPORTER comes in the base image itself: the `agent-index`
+# service and the client in `/opt/plow`. It is what makes installs and tokens
+# COUNT on the scoreboard. WITHOUT `AGENT_ID` in the environment it does NOT
+# GUESS A NAME: it warns and sleeps.
 #
-# PARA QUEM ESTE INSTALL REPORTA. Não é segredo e não é por instalação: é a
-# PÁGINA do agente no Agent Index, a mesma para todo mundo que instalar o
-# RadaR. O Índice aceita uso da chave de qualquer instalador sobre um agente já
-# registrado, e cada cópia sorteia o próprio id de instalação — é assim que
-# instalação e uso somam na mesma página.
+# WHO THIS INSTALL REPORTS FOR. It is not a secret and it is not per install: it
+# is the agent's PAGE on the Agent Index, the same for everyone who installs
+# RadaR. The Index accepts usage from any installer's key on an agent that is
+# already registered, and each copy draws its own install id -- that is how
+# installs and usage add up on the same page.
 #
 #     https://aiworthusing.com/agent-index/radar
 #
-# ELE MORA AQUI, E NÃO NO `compose.yml`, POR UM MOTIVO MEDIDO EM 17/09: um
-# deploy de nuvem (`plow-agents deploy <imagem>@sha --line ln_xxx`) NÃO roda o
-# `compose.yml` — sobe a imagem numa VM da Plow, com o ambiente do
-# provisionador. Medido dentro da imagem construída: sem esta linha o
-# `AGENT_ID` chega VAZIO, o reporter dorme, e o agente funciona perfeitamente
-# enquanto o placar não vê nada. É o critério 3 do portão, e é o que não dá
-# erro nem aparece em log. O provisionador ainda pode sobrescrever.
+# IT LIVES HERE, AND NOT IN `compose.yml`, FOR A REASON MEASURED ON 17/09: a
+# cloud deploy (`plow-agents deploy <image>@sha --line ln_xxx`) does NOT run
+# `compose.yml` -- it brings the image up on a Plow VM, with the provisioner's
+# environment. Measured inside the built image: without this line `AGENT_ID`
+# arrives EMPTY, the reporter sleeps, and the agent works perfectly while the
+# scoreboard sees nothing. It is criterion 3 of the gate, and it is the one that
+# gives no error and does not show in any log. The provisioner can still
+# override it.
 ENV AGENT_ID=radar

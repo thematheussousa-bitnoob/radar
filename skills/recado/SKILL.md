@@ -12,7 +12,7 @@ metadata:
     related_skills: [lembrete]
 ---
 
-# Recado Skill
+# Recado (Message) Skill
 
 Writes the message the person will send to somebody else — a customer, a
 friend, a boss — ready to copy and paste with nothing to delete first. It
@@ -48,9 +48,10 @@ and do not write around it.
 
 ## How to Run
 
-Nothing to run. Produce the message and hand it over like this:
+Nothing to run. Produce the message and hand it over like this, with the
+first line in the person's language:
 
-    Texto pra <quem>:
+    Text for <who>:
 
     <the message, and only the message>
 
@@ -101,17 +102,17 @@ be deleted before sending.
 7. **Hand it over in the shape above**, and add the one practical line if
    something has to go with it — a photo they already have, a link, a file.
 
-8. **Offer one change, not a rewrite.** "Quer mais curto, ou mais formal?" is
+8. **Offer one change, not a rewrite.** "Want it shorter, or more formal?" is
    enough. Do not produce variants nobody asked for.
 
 ## Pitfalls
 
-- **A preamble is a defect.** "Aqui está o texto que preparei:" is one more
+- **A preamble is a defect.** "Here's the text I prepared:" is one more
   thing to delete. The shape above exists to prevent it.
 - **The person's language is not necessarily the recipient's.** A Brazilian
   seller writing to a customer abroad needs the customer's language, not
   theirs.
-- **Do not promise on the person's behalf.** "Chega amanhã" is a commitment
+- **Do not promise on the person's behalf.** "It arrives tomorrow" is a commitment
   they will have to keep. Unless they said it, do not write it.
 - **Do not claim you sent it.** There is no path from here into their
   messaging app. The person sends it.

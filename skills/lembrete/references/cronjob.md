@@ -24,6 +24,6 @@ time ones stay in `SKILL.md`, where they are the point.
   already been delivered. It is for testing a reminder, not for delivering one
   early — early delivery is `update` with a sooner time.
 
-- **`remove` has no undo, and it is not the same as `pause`.** "Deixa pra lá"
-  usually is a cancel and `remove` is right. "Guarda isso por enquanto" is not —
+- **`remove` has no undo, and it is not the same as `pause`.** "Never mind"
+  usually is a cancel and `remove` is right. "Hold that for now" is not —
   that is `pause`, and removing it throws away text the person wrote.

@@ -1,19 +1,19 @@
-# Bytecode compilado. O `COPY skills/` leva a pasta inteira para DUAS raizes
-# dentro da imagem, entao sem esta linha o `.pyc` velho viaja junto e fica la.
+# Compiled bytecode. `COPY skills/` takes the whole folder into TWO roots
+# inside the image, so without this line a stale `.pyc` travels along and stays.
 __pycache__/
 *.pyc
 .pytest_cache/
 
-# A credencial NAO e copiada pelo Dockerfile — ela entra pelo AMBIENTE, em
-# execucao (`env_file` no compose, ou o ambiente da VM num deploy de nuvem).
-# Fica fora do contexto de build de qualquer forma: o contexto inteiro e
-# enviado ao daemon, e segredo nao precisa fazer essa viagem. O `image build`
-# do plow-agents recusa construir se estas linhas nao estiverem aqui.
+# The credential is NOT copied by the Dockerfile -- it comes in through the
+# ENVIRONMENT, at runtime (`env_file` in compose, or the VM's environment in a
+# cloud deploy). It stays out of the build context anyway: the whole context is
+# sent to the daemon, and a secret does not need to make that trip.
+# plow-agents' `image build` refuses to build if these lines are not here.
 plow-credentials
 plow-credentials.*
 
-# A casa: lei, conhecimento, armadilhas, handoff e material de fora. Nada disso
-# entra na imagem, e tirar do contexto deixa o build mais leve.
+# The house: rules, knowledge, traps, handoff and outside material. None of it
+# goes into the image, and keeping it out of the context makes the build lighter.
 CLAUDE.md
 CONHECIMENTO.md
 ARMADILHAS.md

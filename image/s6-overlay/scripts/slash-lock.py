@@ -101,20 +101,20 @@ def owner_uid() -> str:
     """The uid of the member whose line this is, asked of Plow at run time."""
     spec = importlib.util.spec_from_file_location("plow_init", PLOW_INIT)
     plow_init = importlib.util.module_from_spec(spec)
-    # Registrado ANTES de executar, e isso nao e formalidade de importlib: o
-    # `plow-init.py` abre com `from __future__ import annotations`, entao
-    # `chats: list[Chat]` chega ao pydantic como TEXTO, e ele so resolve esse
-    # nome na primeira validacao -- procurando em `sys.modules[__module__]`.
-    # Modulo fora do `sys.modules` faz a busca voltar vazia, e `Identity` morre
-    # como "is not fully defined". Medido em 14/09/2026, no primeiro boot com o
-    # plow-init REAL: as seis provas anteriores usaram um duple, que nao tem
-    # anotacao adiada, e por isso passaram por cima do defeito.
+    # Registered BEFORE executing, and that is not importlib formality:
+    # `plow-init.py` opens with `from __future__ import annotations`, so
+    # `chats: list[Chat]` reaches pydantic as TEXT, and it only resolves that
+    # name on the first validation -- by looking in `sys.modules[__module__]`.
+    # A module missing from `sys.modules` makes the lookup come back empty, and
+    # `Identity` dies as "is not fully defined". Measured on 14/09/2026, on the
+    # first boot with the REAL plow-init: the six earlier proofs used a double,
+    # which has no postponed annotations, and so they walked past the defect.
     sys.modules[spec.name] = plow_init
     try:
         spec.loader.exec_module(plow_init)
     except Exception:
-        # Nao deixar meio-modulo registrado: a proxima tentativa acharia o
-        # cadaver em vez de carregar de novo.
+        # Never leave a half-module registered: the next attempt would find
+        # the corpse instead of loading it again.
         sys.modules.pop(spec.name, None)
         raise
 

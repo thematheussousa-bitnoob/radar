@@ -1,65 +1,71 @@
-# RadaR — composicao do agente.
+# RadaR -- the agent's compose file.
 #
-# Copiado do exemplo publicado pela Plow (plow-agents/compose.example.yml), no
-# clone de leitura.
+# Copied from the example Plow publishes (plow-agents/compose.example.yml), in
+# the read-only clone.
 #
-# O comentario anterior dizia aqui que "o exemplo da Plow nao pede identificador
-# de agente, e esta casa nao inventa um". Era verdade sobre o compose.example.yml
-# e FALSA como conclusao: o `AGENT_ID` esta no README da Plow, e sem ele o
-# reporter do Agent Index sobe, avisa que nao tem para quem reportar, e dorme
-# 86400. O agente funciona igual e o placar nao enxerga nada.
+# The previous comment here said that "Plow's example does not ask for an agent
+# identifier, and this house does not invent one". That was true about
+# compose.example.yml and FALSE as a conclusion: `AGENT_ID` is in Plow's README,
+# and without it the Agent Index reporter starts, warns that it has no one to
+# report for, and sleeps 86400. The agent works the same and the scoreboard sees
+# nothing.
 services:
   agent:
     build: .
-    # VOLTA SOZINHO. Sem esta linha a politica e `restart: no`, medido com
-    # `docker inspect` em 17/09: a maquina reiniciou, o conteiner morreu as
-    # 21:11 e continuou morto. Subiu as 21:20 porque alguem abriu o editor e
-    # foi olhar — nao porque algo vigiasse. Ja houve um caso de catorze horas
-    # achado por acaso, e a diferenca entre nove minutos e catorze horas foi a
-    # hora em que uma pessoa passou por perto.
+    # COMES BACK ON ITS OWN. Without this line the policy is `restart: no`,
+    # measured with `docker inspect` on 17/09: the machine rebooted, the
+    # container died at 21:11 and stayed dead. It came up at 21:20 because
+    # someone opened the editor and went to look -- not because anything was
+    # watching. There was already a fourteen-hour case found by chance, and the
+    # difference between nine minutes and fourteen hours was when a person
+    # happened to pass by.
     #
-    # Isto importa MAIS na maquina de quem instala do que na nossa: ninguem
-    # vai olhar o `docker ps` do computador de outra pessoa, e um lembrete
-    # cuja hora passa com o agendador fora do ar e apagado sem aviso
-    # ([R-graca]). `unless-stopped` e nao `always` de proposito: quem parar o
-    # agente de proposito mandou parar, e o reinicio da maquina nao desfaz a
-    # ordem dela.
+    # This matters MORE on the installer's machine than on ours: nobody is
+    # going to look at `docker ps` on someone else's computer, and a reminder
+    # whose time passes while the scheduler is down is deleted without notice
+    # ([R-graca]). `unless-stopped` and not `always` on purpose: whoever stops
+    # the agent on purpose asked for it to stop, and a machine reboot does not
+    # undo that order.
     restart: unless-stopped
-    # O `AGENT_ID` NÃO MORA MAIS AQUI: mora no `Dockerfile`, assado na imagem.
-    # Um deploy de nuvem não roda este arquivo — sobe a imagem sozinha, com o
-    # ambiente do provisionador —, e um `AGENT_ID` que só existisse aqui não
-    # chegaria lá. O agente funcionaria e o placar não veria nada.
+    # `AGENT_ID` DOES NOT LIVE HERE ANYMORE: it lives in the `Dockerfile`, baked
+    # into the image. A cloud deploy does not run this file -- it brings the
+    # image up on its own, with the provisioner's environment -- and an
+    # `AGENT_ID` that only existed here would not get there. The agent would
+    # work and the scoreboard would see nothing.
     #
-    # A CREDENCIAL ENTRA PELO AMBIENTE, não mais por monte. A base parou de
-    # promover `/var/lib/plow/credentials.host` no commit b78250e: quem
-    # continuar montando fica sem credencial nenhuma e o `plow-init` estaciona.
-    # Esta é a forma do `compose.example.yml` publicado pela Plow.
+    # THE CREDENTIAL COMES IN THROUGH THE ENVIRONMENT, no longer through a
+    # mount. The base stopped promoting `/var/lib/plow/credentials.host` in
+    # commit b78250e: whoever keeps mounting it is left with no credential at
+    # all and `plow-init` parks. This is the shape of the `compose.example.yml`
+    # Plow publishes.
     #
-    # Esta continua sendo a ÚNICA credencial que o contêiner vê. A credencial
-    # da CONTA vive fora desta pasta e nunca entra aqui.
+    # This is still the ONLY credential the container sees. The ACCOUNT
+    # credential lives outside this folder and never comes in here.
     env_file:
       - path: ./plow-credentials
         required: false
     volumes:
-      # A casa do agente, preservada entre `up` e `down` — sessões e configuração.
+      # The agent's home, kept between `up` and `down` -- sessions and config.
       #
-      # Uma edição na persona NÃO precisa de `down -v`: o `plow-init` compõe a
-      # identidade dentro da casa a cada boot, então `up --build -d` basta.
+      # An edit to the persona does NOT need `down -v`: `plow-init` composes
+      # the identity inside the home on every boot, so `up --build -d` is
+      # enough.
       #
-      # `docker compose down -v` APAGA este volume. Depois do registro no Índice
-      # isso é irreversível no que importa: o id da instalação vai junto, e a
-      # identidade no placar troca. Usar só para descartar o agente de propósito.
+      # `docker compose down -v` DELETES this volume. After registering on the
+      # Index that is irreversible where it matters: the install id goes with
+      # it, and the identity on the scoreboard changes. Use it only to discard
+      # the agent on purpose.
       #
-      # Corrigido em 11/09/2026. O comentário anterior mandava rodar `down -v`
-      # para ver mudança de persona — era a premissa derrubada de 09/09 virada
-      # em comando, e o comando é justamente o que queima a identidade.
-      # Fonte: `plow-hermes-agent/compose.yml` no clone de leitura, que diz na
-      # letra "An edit to SOUL.md does not need it".
+      # Corrected on 11/09/2026. The previous comment said to run `down -v` to
+      # see a persona change -- it was the premise overturned on 09/09 turned
+      # into a command, and that command is exactly what burns the identity.
+      # Source: `plow-hermes-agent/compose.yml` in the read-only clone, which
+      # says in so many words "An edit to SOUL.md does not need it".
       - agent-home:/var/lib/hermes
-    # O agente salva estado no SIGTERM; o supervisor dele dá 30s, e o padrão de
-    # 10s do Docker corta no meio e órfã a transcrição.
+    # The agent saves state on SIGTERM; its supervisor gives it 30s, and
+    # Docker's 10s default cuts it off midway and orphans the transcript.
     stop_grace_period: 35s
-    # Sem portas: o agente conecta para fora, na direção da Plow.
+    # No ports: the agent connects outward, toward Plow.
 
 volumes:
   agent-home:

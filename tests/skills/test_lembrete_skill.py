@@ -113,7 +113,7 @@ class WhatTheSkillExistsFor(unittest.TestCase):
     def test_a_time_already_past_is_refused(self):
         result, ok = resolve("hoje as 18h")  # NOW is 19:00
         self.assertFalse(ok)
-        self.assertIn("passou", result["reason"])
+        self.assertIn("already passed", result["reason"])
 
     def test_rolling_to_tomorrow_is_declared(self):
         result, ok = resolve("as 7 da noite")  # 19:00 today has passed
@@ -212,7 +212,7 @@ class TheDelayThatBecameAnHour(unittest.TestCase):
         question -- but the question it gets must be about the date."""
         result, ok = resolve("em 20 de setembro")
         self.assertFalse(ok)
-        self.assertNotIn("daqui a quanto tempo", result["ask"].lower())
+        self.assertNotIn("how long from now", result["ask"].lower())
 
 
 class WhoseClock(unittest.TestCase):
@@ -245,13 +245,13 @@ class WhoseClock(unittest.TestCase):
         moment = datetime.fromisoformat(NOW).replace(tzinfo=tzinfo)
         result, ok = quando.resolve("amanha as 9", moment, name, "server")
         self.assertTrue(ok)
-        self.assertTrue(any("fuso nao confirmado" in l for l in result["assumed"]))
+        self.assertTrue(any("zone not confirmed" in l for l in result["assumed"]))
 
     def test_a_relative_delay_needs_no_zone_at_all(self):
         result, ok = resolve("in 20 minutes", tz=LA)
         self.assertTrue(ok)
         self.assertFalse(result["zone_matters"])
-        self.assertFalse(any("fuso" in line for line in result["assumed"]))
+        self.assertFalse(any("zone" in line for line in result["assumed"]))
 
     def test_a_wall_clock_declares_that_the_zone_matters(self):
         result, ok = resolve("amanha as 9", tz=LA)

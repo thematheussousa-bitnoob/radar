@@ -354,9 +354,9 @@ ZONE_NOTE = {
     # Not a warning to be obeyed -- one was, and it was walked past. This is a
     # fact for the agent to carry into the sentence it says out loud, so SHE
     # can catch it. What actually catches it is ["agora"].
-    "inferido": "fuso deduzido do numero dela (%s), nao confirmado por ela",
-    "installer": "fuso nao confirmado com a pessoa: usei %s, o que o instalador configurou",
-    "server": "fuso nao confirmado com a pessoa: usei %s, o relogio do servidor",
+    "inferido": "zone inferred from their number (%s), not confirmed by them",
+    "installer": "zone not confirmed with the person: used %s, the one the installer configured",
+    "server": "zone not confirmed with the person: used %s, the server clock",
 }
 
 
@@ -440,7 +440,7 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
                 wall_clock_note()
             if moment.hour == 0 and moment.minute == 0 and "T" not in iso.group(0):
                 moment = moment.replace(hour=9)
-                assumed.append("hora nao dita: assumido 09:00")
+                assumed.append("hour not said: assumed 09:00")
             return finish(moment, now, context, text)
 
     # 2. "em 20 minutos" / "daqui a 2 horas" / "in 30 min" -- relative.
@@ -459,8 +459,8 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
         if amount is not None and unit in MINUTES:
             minutes = amount * MINUTES[unit]
             if minutes <= 0:
-                return fail("O prazo pedido e zero ou negativo.",
-                            "Daqui a quanto tempo, exatamente?")
+                return fail("The requested delay is zero or negative.",
+                            "How long from now, exactly?")
             # Handed to cron as "in Nm": it fires ONCE. A bare "30m" would
             # mean EVERY 30 minutes -- not the same thing.
             moment = now + timedelta(minutes=minutes)
@@ -507,8 +507,8 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
         spoken,
     ):
         return fail(
-            "Reconheci um prazo relativo em %r, mas nao a unidade de tempo." % phrase,
-            "E daqui a quanto tempo? Minutos, horas ou dias?",
+            "Recognized a relative delay in %r, but not its time unit." % phrase,
+            "And how long from now? Minutes, hours or days?",
         )
 
     # 3. A day anchor, with or without a clock time. All of this is wall clock.
@@ -525,7 +525,7 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
                 ahead = (index - now.weekday()) % 7
                 if ahead == 0:
                     ahead = 7  # "sexta" said on a Friday means the next one.
-                    assumed.append("hoje ja e esse dia: marcado para a semana que vem")
+                    assumed.append("today is already that day: set for next week")
                 day = now.date() + timedelta(days=ahead)
                 break
 
@@ -533,8 +533,8 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
     period = find_period(text)
 
     if day is None and clock is None and period is None:
-        return fail("Nao reconheci nenhuma expressao de tempo em %r." % phrase,
-                    "Para quando e isso?")
+        return fail("Recognized no time expression in %r." % phrase,
+                    "When is this for?")
 
     wall_clock_note()
 
@@ -543,10 +543,10 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
     elif period is not None:
         word, hour = period
         minute = 0
-        assumed.append("hora nao dita: assumido %02d:00 (%s)" % (hour, word))
+        assumed.append("hour not said: assumed %02d:00 (%s)" % (hour, word))
     else:
         hour, minute = 9, 0
-        assumed.append("hora nao dita: assumido 09:00")
+        assumed.append("hour not said: assumed 09:00")
 
     if day is None:
         # A clock time with no day: today if it is still ahead, else tomorrow.
@@ -554,7 +554,7 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
         candidate = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
         if candidate <= now:
             day = day + timedelta(days=1)
-            assumed.append("esse horario ja passou hoje: marcado para amanha")
+            assumed.append("that time already passed today: set for tomorrow")
 
     moment = datetime.combine(day, now.timetz()).replace(
         hour=hour, minute=minute, second=0, microsecond=0
@@ -565,8 +565,8 @@ def resolve(phrase, now, zone_name=None, zone_source="server"):
 def finish(moment, now, context, text):
     if moment <= now:
         return fail(
-            "O momento resolvido (%s) ja passou." % moment.isoformat(),
-            "Isso ja passou. Voce quer marcar para quando?",
+            "The resolved moment (%s) has already passed." % moment.isoformat(),
+            "That has already passed. When do you want it set for?",
         )
     gap = int((moment - now).total_seconds()) // 60
     return {
@@ -607,8 +607,8 @@ def main(argv=None):
     if args.tz and zone_source != "person":
         json.dump({
             "ok": False,
-            "reason": "Fuso %r nao reconhecido nesta maquina." % args.tz,
-            "ask": "Em que cidade ou fuso voce esta?",
+            "reason": "Zone %r is not recognized on this machine." % args.tz,
+            "ask": "What city or time zone are you in?",
         }, sys.stdout, ensure_ascii=False, indent=2)
         sys.stdout.write("\n")
         return 2
@@ -640,10 +640,10 @@ def main(argv=None):
     if ok and result.get("zone_matters") and result.get("zone_source") not in TRUSTED:
         json.dump({
             "ok": False,
-            "reason": "Hora de relogio sem fuso da pessoa e sem numero que responda "
-                      "(usaria %s, fonte: %s)."
+            "reason": "A wall-clock time with no zone from the person and no number to "
+                      "answer it (would use %s, source: %s)."
                       % (result.get("zone"), result.get("zone_source")),
-            "ask": "Em que lugar do mundo voce esta?",
+            "ask": "Where in the world are you?",
         }, sys.stdout, ensure_ascii=False, indent=2)
         sys.stdout.write("\n")
         return 2
